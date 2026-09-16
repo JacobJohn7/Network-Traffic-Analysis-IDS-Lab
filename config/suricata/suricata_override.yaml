@@ -1,0 +1,54 @@
+# suricata_override.yaml - Configuration Snippet & Lab Tuning
+# Target Interface: enp0s8 (VirtualBox Host-Only Adapter - vboxnet0, 192.168.56.0/24)
+
+vars:
+  address-groups:
+    HOME_NET: "[192.168.56.0/24]"
+    EXTERNAL_NET: "!$HOME_NET"
+
+  port-groups:
+    HTTP_PORTS: "80"
+    SHELLCODE_PORTS: "!80"
+    ORACLE_PORTS: 1521
+    SSH_PORTS: 22
+
+af-packet:
+  - interface: enp0s8
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+    use-mmap: yes
+    # Crucial performance setting for VirtualBox Host-Only networking:
+    # Disable checksum validation to prevent dropped packets due to host OS NIC offloading
+    checksum-validation: no
+
+default-rule-path: /etc/suricata/rules
+rule-files:
+  - suricata.rules
+  - local.rules
+
+outputs:
+  - fast:
+      enabled: yes
+      filename: fast.log
+      append: yes
+
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert:
+            payload: yes
+            payload-buffer: yes
+            payload-printable: yes
+            packet: yes
+            http-body: yes
+        - http:
+            extended: yes
+        - dns:
+            version: 2
+        - tls:
+            extended: yes
+        - files:
+            force-magic: yes

@@ -1,0 +1,10 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dns
+#open	2026-09-15-14-10-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	trans_id	rtt	query	qclass	qclass_name	qtype	qtype_name	rcode	rcode_name	AA	TC	RD	RA	Z	answers	TTLs	rejected
+#types	time	string	addr	port	addr	port	enum	count	interval	string	count	string	count	string	count	string	bool	bool	bool	bool	count	vector[string]	vector[interval]	bool
+1726409410.029104	C2kF8A1M9z4L5x	192.168.56.105	54129	192.168.56.1	53	udp	32104	0.001200	ubuntu-server.local	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	192.168.56.106	300.000000	F
+#close	2026-09-15-14-30-00

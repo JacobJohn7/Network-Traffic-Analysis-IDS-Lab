@@ -1,0 +1,6 @@
+# Ignore raw binary pcap captures if too large
+*.pcapng
+*.cap
+.DS_Store
+*.swp
+*~

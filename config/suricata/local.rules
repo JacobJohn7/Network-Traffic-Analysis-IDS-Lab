@@ -1,0 +1,20 @@
+# local.rules - Custom Suricata NIDS Detection Rules
+# Lab Environment: Ubuntu Server 24.04 LTS (192.168.56.106)
+# Author: Jacob John
+# Description: Custom signature set created for local network security monitoring testing.
+
+# 1. Web Shell / Command Injection Attempt Detection
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA HTTP Suspicious Command Injection Attempt"; flow:established,to_server; content:"cmd.php"; nocase; content:"cmd="; nocase; classtype:web-application-attack; sid:1000001; rev:1;)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA HTTP Path Traversal Attempt Detected"; flow:established,to_server; content:"../.."; classtype:web-application-attack; sid:1000002; rev:1;)
+
+# 2. SSH Brute Force Threshold Alert
+alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (msg:"LOCAL SURICATA SSH Potential Brute Force Attempt"; flow:established,to_server; flags:S; threshold: type threshold, track by_src, count 10, seconds 60; classtype:attempted-recon; sid:1000003; rev:1;)
+
+# 3. Reconnaissance / Nmap SYN Scan Detection
+alert tcp $EXTERNAL_NET any -> $HOME_NET any (msg:"LOCAL SURICATA RECON Nmap Stealth SYN Scan Detected"; flags:S,12; window:1024; classtype:attempted-recon; sid:1000004; rev:1;)
+
+# 4. Outbound Traffic to Suspicious Non-Standard Ports
+alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell or Proxy Port 4444"; flow:to_server; dst_port:4444; classtype:trojan-activity; sid:1000005; rev:1;)
+
+# 5. Sensitive File Access Attempt (.env / config exposure)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA HTTP Request for Sensitive Environment File"; flow:established,to_server; content:".env"; nocase; classtype:attempted-recon; sid:1000006; rev:1;)
