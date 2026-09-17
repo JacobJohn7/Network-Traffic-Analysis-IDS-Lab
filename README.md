@@ -1,13 +1,8 @@
-# 🛰️ Network Traffic Analysis & NIDS Rule Engineering
-
-[![Suricata](https://img.shields.io/badge/NIDS-Suricata_8.x-EF3B2C?style=for-the-badge&logo=suricata&logoColor=white)](https://suricata.io/)
-[![Zeek](https://img.shields.io/badge/Telemetry-Zeek_Network_Monitor-777777?style=for-the-badge&logo=zeek&logoColor=white)](https://zeek.org/)
-[![Wireshark](https://img.shields.io/badge/CLI-tshark-1679A7?style=for-the-badge&logo=wireshark&logoColor=white)](https://www.wireshark.org/)
-[![Ubuntu](https://img.shields.io/badge/OS-Ubuntu_Server_24.04-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+# Network Traffic Analysis & NIDS Rule Engineering
 
 ---
 
-## 📌 Overview
+## Overview
 
 This repository documents hands-on network security monitoring (NSM), packet analysis, and signature-based Intrusion Detection System (NIDS) rule development conducted on an Ubuntu Server VirtualBox virtual machine (`192.168.56.106`).
 
@@ -15,7 +10,7 @@ The lab combines CLI packet extraction via **`tshark`**, protocol telemetry gene
 
 ---
 
-## 🌐 Network Monitoring Architecture
+## Network Monitoring Architecture
 
 ```
 Attacker Node (192.168.56.105) ---> [vboxnet0] ---> Target Node (192.168.56.106 - enp0s8)
@@ -26,7 +21,7 @@ Attacker Node (192.168.56.105) ---> [vboxnet0] ---> Target Node (192.168.56.106 
 
 ---
 
-## ✍️ Custom NIDS Detection Rules (`config/suricata/local.rules`)
+## Custom NIDS Detection Rules (`config/suricata/local.rules`)
 
 Custom Suricata signatures authored to detect web application attacks and unauthorized outbound connections:
 
@@ -43,7 +38,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unen
 
 ---
 
-## ⚙️ VirtualBox Checksum Offload Fix (`config/suricata/suricata_override.yaml`)
+## VirtualBox Checksum Offload Fix (`config/suricata/suricata_override.yaml`)
 
 VirtualBox Host-Only interfaces (`vboxnet0`) offload TCP checksum calculations to the host operating system. Suricata drops incoming frames with uncalculated TCP checksums by default.
 
@@ -61,7 +56,7 @@ af-packet:
 
 ---
 
-## 💻 CLI Packet Extraction (`scripts/tshark_analysis.sh`)
+## CLI Packet Extraction (`scripts/tshark_analysis.sh`)
 
 ### HTTP Request Telemetry Extraction
 ```bash
@@ -77,7 +72,7 @@ tshark -r pcaps/lab_capture.pcap -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0" 
 
 ---
 
-## 📊 Telemetry Artifacts
+## Telemetry Artifacts
 
 ### 1. Zeek HTTP Telemetry (`zeek/logs/http.log`)
 ```tsv
@@ -91,7 +86,7 @@ tshark -r pcaps/lab_capture.pcap -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0" 
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 .
