@@ -1,5 +1,10 @@
 # Network Traffic Analysis & NIDS Rule Engineering
 
+![tshark](https://img.shields.io/badge/tshark-Wireshark_CLI-1679A7?style=for-the-badge&logo=wireshark&logoColor=white)
+![Zeek](https://img.shields.io/badge/Zeek-Protocol_Telemetry-77B255?style=for-the-badge)
+![Suricata](https://img.shields.io/badge/Suricata-Custom_Rules-red?style=for-the-badge&logo=suricata&logoColor=white)
+![PCAP Triage](https://img.shields.io/badge/PCAP-Packet_Analysis-blue?style=for-the-badge)
+
 ---
 
 ## Overview
