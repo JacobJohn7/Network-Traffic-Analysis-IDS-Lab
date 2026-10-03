@@ -28,7 +28,7 @@ Attacker Node (192.168.56.105) ---> [vboxnet0] ---> Target Node (192.168.56.106 
 
 ## Custom NIDS Detection Rules (`config/suricata/local.rules`)
 
-Custom Suricata signatures authored to detect web application attacks and unauthorized outbound connections:
+Custom Suricata signatures authored to detect web application attacks, known CVE exploit patterns, and unauthorized outbound connections:
 
 ```suricata
 # 1. HTTP Command Injection Parameter Passing
@@ -37,7 +37,16 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA HTTP 
 # 2. Sensitive Environment File Request Probe
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA Sensitive .env File Request"; flow:established,to_server; content:".env"; nocase; classtype:attempted-recon; sid:1000006; rev:1;)
 
-# 3. Outbound Reverse Shell to Non-Standard Port
+# 3. Log4j / Log4Shell JNDI Exploit Injection Attempt (CVE-2021-44228)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Log4j JNDI Exploit Attempt in HTTP Headers/URI (CVE-2021-44228)"; flow:established,to_server; content:"${jndi:"; nocase; fast_pattern; reference:cve,2021-44228; classtype:attempted-admin; sid:1000007; rev:1;)
+
+# 4. Spring4Shell Remote Code Execution Payload (CVE-2022-22965)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Spring4Shell ClassLoader Access Pattern (CVE-2022-22965)"; flow:established,to_server; content:"class.module.classLoader"; nocase; fast_pattern; reference:cve,2022-22965; classtype:attempted-admin; sid:1000008; rev:1;)
+
+# 5. Web Reconnaissance - Vulnerability Scanner User-Agent Probing
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA RECON Automated Security Scanner User-Agent Detected (Nikto/Sqlmap)"; flow:established,to_server; http.user_agent; content:"Nikto"; nocase; classtype:attempted-recon; sid:1000009; rev:1;)
+
+# 6. Outbound Reverse Shell to Non-Standard Port
 alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell Port 4444"; flow:to_server; dst_port:4444; classtype:trojan-activity; sid:1000005; rev:1;)
 ```
 

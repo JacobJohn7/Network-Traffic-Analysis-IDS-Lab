@@ -18,3 +18,12 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unen
 
 # 5. Sensitive File Access Attempt (.env / config exposure)
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA HTTP Request for Sensitive Environment File"; flow:established,to_server; content:".env"; nocase; classtype:attempted-recon; sid:1000006; rev:1;)
+
+# 6. Log4j / Log4Shell JNDI Exploit Injection Attempt (CVE-2021-44228)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Log4j JNDI Exploit Attempt in HTTP Headers/URI (CVE-2021-44228)"; flow:established,to_server; content:"${jndi:"; nocase; fast_pattern; reference:cve,2021-44228; reference:url,cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228; classtype:attempted-admin; sid:1000007; rev:1;)
+
+# 7. Spring4Shell Remote Code Execution Payload (CVE-2022-22965)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Spring4Shell ClassLoader Access Pattern (CVE-2022-22965)"; flow:established,to_server; content:"class.module.classLoader"; nocase; fast_pattern; reference:cve,2022-22965; classtype:attempted-admin; sid:1000008; rev:1;)
+
+# 8. Web Reconnaissance - Automated Vulnerability Scanner User-Agent Probing
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA RECON Automated Security Scanner User-Agent Detected (Nikto/Sqlmap)"; flow:established,to_server; http.user_agent; content:"Nikto"; nocase; classtype:attempted-recon; sid:1000009; rev:1;)
