@@ -37,9 +37,27 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLO
 # 5. Web Reconnaissance - Vulnerability Scanner User-Agent Probing
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA RECON Automated Security Scanner User-Agent Detected (Nikto/Sqlmap)"; flow:established,to_server; http.user_agent; content:"Nikto"; nocase; classtype:attempted-recon; sid:1000009; rev:1;)
 
-# 6. Outbound Reverse Shell to Non-Standard Port
+# 6. Atlassian Confluence OGNL Injection Remote Code Execution (CVE-2022-26134)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Atlassian Confluence OGNL Injection In URI (CVE-2022-26134)"; flow:established,to_server; http.uri; content:"%24%7B"; nocase; content:"%40"; nocase; content:"getEngineByName"; nocase; fast_pattern; reference:cve,2022-26134; classtype:attempted-admin; sid:1000010; rev:1;)
+
+# 7. Palo Alto PAN-OS GlobalProtect Command Injection Probe (CVE-2024-3400)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Palo Alto PAN-OS GlobalProtect Arbitrary File Creation (CVE-2024-3400)"; flow:established,to_server; http.uri; content:"/ssl-vpn/hipreport.esp"; fast_pattern; http.header; content:"SESSID=../../"; nocase; reference:cve,2024-3400; classtype:web-application-attack; sid:1000011; rev:1;)
+
+# 8. Outbound Reverse Shell to Non-Standard Port
 alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell Port 4444"; flow:to_server; dst_port:4444; classtype:trojan-activity; sid:1000005; rev:1;)
 ```
+
+---
+
+## MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID | Detection Source | Rule SID |
+| :--- | :--- | :--- | :--- | :--- |
+| **Initial Access** | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190/) | Suricata NIDS | `1000007`, `1000008`, `1000010`, `1000011` |
+| **Execution** | Command and Scripting Interpreter | [T1059](https://attack.mitre.org/techniques/T1059/) | Suricata NIDS / Zeek HTTP | `1000001` |
+| **Credential Access** | Brute Force: Password Guessing | [T1110.001](https://attack.mitre.org/techniques/T1110/001/) | Suricata NIDS (SSH Threshold) | `1000003` |
+| **Reconnaissance** | Active Scanning: Port / Vulnerability | [T1595](https://attack.mitre.org/techniques/T1595/) | Suricata NIDS / tshark | `1000004`, `1000006`, `1000009` |
+| **Command & Control** | Non-Standard Port Communication | [T1571](https://attack.mitre.org/techniques/T1571/) | Suricata NIDS / Zeek Conn | `1000005` |
 
 ---
 
