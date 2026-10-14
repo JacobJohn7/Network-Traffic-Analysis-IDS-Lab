@@ -1,27 +1,18 @@
 # Network Traffic Analysis & NIDS Rule Engineering
 
-![tshark](https://img.shields.io/badge/tshark-Wireshark_CLI-1679A7?style=for-the-badge&logo=wireshark&logoColor=white)
-![Zeek](https://img.shields.io/badge/Zeek-Protocol_Telemetry-77B255?style=for-the-badge)
-![Suricata](https://img.shields.io/badge/Suricata-Custom_Rules-red?style=for-the-badge&logo=suricata&logoColor=white)
-![PCAP Triage](https://img.shields.io/badge/PCAP-Packet_Analysis-blue?style=for-the-badge)
+Network security monitoring (NSM), packet analysis, and signature-based Intrusion Detection System (NIDS) rule development conducted on an Ubuntu Server VirtualBox virtual machine (`192.168.56.106`).
 
----
-
-## Overview
-
-This repository documents hands-on network security monitoring (NSM), packet analysis, and signature-based Intrusion Detection System (NIDS) rule development conducted on an Ubuntu Server VirtualBox virtual machine (`192.168.56.106`).
-
-The lab combines CLI packet extraction via **`tshark`**, protocol telemetry generation via **`Zeek`**, and real-time alert generation via **`Suricata`**.
+The lab combines CLI packet extraction via `tshark`, protocol telemetry generation via `Zeek`, and real-time alert generation via `Suricata`.
 
 ---
 
 ## Network Monitoring Architecture
 
-```
+```text
 Attacker Node (192.168.56.105) ---> [vboxnet0] ---> Target Node (192.168.56.106 - enp0s8)
-                                                     ├── tshark (CLI Packet Capture)
-                                                     ├── Zeek Engine (conn.log, http.log, dns.log)
-                                                     └── Suricata NIDS (local.rules Engine)
+                                                    ├── tshark (CLI Packet Capture)
+                                                    ├── Zeek Engine (conn.log, http.log, dns.log)
+                                                    └── Suricata NIDS (local.rules Engine)
 ```
 
 ---
@@ -52,7 +43,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unen
 
 ---
 
-## VirtualBox Checksum Offload Fix (`config/suricata/suricata_override.yaml`)
+## VirtualBox Checksum Offload Tuning (`config/suricata/suricata_override.yaml`)
 
 VirtualBox Host-Only interfaces (`vboxnet0`) offload TCP checksum calculations to the host operating system. Suricata drops incoming frames with uncalculated TCP checksums by default.
 
@@ -65,7 +56,7 @@ af-packet:
     cluster-type: cluster_flow
     defrag: yes
     use-mmap: yes
-    checksum-validation: no  # Essential setting for VirtualBox host-only NICs
+    checksum-validation: no  # Required for VirtualBox host-only NIC offloading
 ```
 
 ---
@@ -102,7 +93,7 @@ tshark -r pcaps/lab_capture.pcap -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0" 
 
 ## Repository Structure
 
-```
+```text
 .
 ├── config/
 │   └── suricata/
