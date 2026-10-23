@@ -44,7 +44,9 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLO
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Palo Alto PAN-OS GlobalProtect Arbitrary File Creation (CVE-2024-3400)"; flow:established,to_server; http.uri; content:"/ssl-vpn/hipreport.esp"; fast_pattern; http.header; content:"SESSID=../../"; nocase; reference:cve,2024-3400; classtype:web-application-attack; sid:1000011; rev:1;)
 
 # 8. Outbound Reverse Shell to Non-Standard Port
+# 9. Outbound Reverse Shell to Non-Standard Port
 alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell Port 4444"; flow:to_server; dst_port:4444; classtype:trojan-activity; sid:1000005; rev:1;)
+alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell Port 5555"; flow:to_server; dst_port:5555; classtype:trojan-activity; sid:1000013; rev:1;)
 ```
 
 ---
