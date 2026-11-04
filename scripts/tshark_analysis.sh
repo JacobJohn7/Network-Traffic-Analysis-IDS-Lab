@@ -1,39 +1,35 @@
 #!/bin/bash
-# tshark_analysis.sh - Helper script for extracting network telemetry from PCAP captures
-# Used during lab investigation on Ubuntu Server (192.168.56.106)
 
-PCAP_FILE="${1:-pcaps/lab_capture.pcap}"
+# HTTP Request Telemetry Extraction
+# Extracts HTTP request details from a PCAP file
+# Usage: ./tshark_analysis.sh http pcaps/lab_capture.pcap
 
-if [ ! -f "$PCAP_FILE" ]; then
-    echo "[!] Usage: $0 <path_to_pcap>"
-    echo "[!] PCAP file not found: $PCAP_FILE"
-    exit 1
-fi
+# TCP SYN Scan Detection
+# Identifies potential port scans by counting SYN packets
+# Usage: ./tshark_analysis.sh syn pcaps/lab_capture.pcap
 
-echo "=================================================="
-echo " Network Traffic Analysis Summary: $PCAP_FILE"
-echo "=================================================="
+# DNS Query Analysis
+# Analyzes DNS queries for suspicious patterns
+# Usage: ./tshark_analysis.sh dns pcaps/lab_capture.pcap
 
-echo ""
-echo "[+] Top 10 Source IP Addresses by Packet Count:"
-tshark -r "$PCAP_FILE" -q -z ip,hosts,tree | head -n 20 2>/dev/null || \
-tshark -r "$PCAP_FILE" -T fields -e ip.src | sort | uniq -c | sort -nr | head -n 10
-
-echo ""
-echo "[+] Protocol Breakdown:"
-tshark -r "$PCAP_FILE" -q -z io,phs
-
-echo ""
-echo "[+] HTTP Requests Detected:"
-tshark -r "$PCAP_FILE" -Y "http.request" -T fields -e frame.time -e ip.src -e ip.dst -e http.host -e http.request.method -e http.request.uri 2>/dev/null
-
-echo ""
-echo "[+] DNS Queries Filtered:"
-tshark -r "$PCAP_FILE" -Y "dns.flags.response == 0" -T fields -e ip.src -e dns.qry.name -e dns.qry.type 2>/dev/null | head -n 15
-
-echo ""
-echo "[+] Suspicious TCP SYN Scans (High Port Count):"
-tshark -r "$PCAP_FILE" -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0" -T fields -e ip.src -e ip.dst -e tcp.dstport | sort | uniq -c | sort -nr | head -n 10
-
-echo ""
-echo "[+] Capture Analysis Complete."
+case "$1" in
+    http)
+        echo "Extracting HTTP request details..."
+        tshark -r "$2" -Y "http.request" \
+            -T fields -e frame.time -e ip.src -e ip.dst -e http.host -e http.request.method -e http.request.uri
+        ;;
+    syn)
+        echo "Detecting TCP SYN scans..."
+        tshark -r "$2" -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0" \
+            -T fields -e ip.src -e ip.dst -e tcp.dstport | sort | uniq -c | sort -nr
+        ;;
+    dns)
+        echo "Analyzing DNS queries..."
+        tshark -r "$2" -Y "dns" \
+            -T fields -e frame.time -e ip.src -e ip.dst -e dns.qry.name -e dns.qry.type
+        ;;
+    *)
+        echo "Usage: $0 {http|syn|dns} <pcap_file>"
+        exit 1
+        ;;
+esac
