@@ -46,6 +46,12 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLO
 # 8. Outbound Reverse Shell to Non-Standard Port
 alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell Port 4444"; flow:to_server; dst_port:4444; classtype:trojan-activity; sid:1000005; rev:1;)
 alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unencrypted Shell Port 5555"; flow:to_server; dst_port:5555; classtype:trojan-activity; sid:1000013; rev:1;)
+
+# 9. SAP NetWeaver Visual Composer Unauthenticated Metadata Uploader (CVE-2025-31324)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT SAP NetWeaver Visual Composer Metadata Uploader Unauthenticated File Upload (CVE-2025-31324)"; flow:established,to_server; http.uri; content:"/developmentserver/metadatauploader"; nocase; fast_pattern; reference:cve,2025-31324; classtype:web-application-attack; sid:1000014; rev:1;)
+
+# 10. Apache Tomcat Partial PUT Session Deserialization RCE Probe (CVE-2025-24813)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Apache Tomcat Partial PUT Session Deserialization RCE Probe (CVE-2025-24813)"; flow:established,to_server; http.method; content:"PUT"; http.header; content:"Content-Range:"; nocase; reference:cve,2025-24813; classtype:web-application-attack; sid:1000015; rev:1;)
 ```
 
 ---
@@ -54,7 +60,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET !443 (msg:"LOCAL SURICATA Outbound Unen
 
 | Tactic | Technique | ID | Detection Source | Rule SID |
 | :--- | :--- | :--- | :--- | :--- |
-| **Initial Access** | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190/) | Suricata NIDS | `1000007`, `1000008`, `1000010`, `1000011` |
+| **Initial Access** | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190/) | Suricata NIDS | `1000007`, `1000008`, `1000010`, `1000011`, `1000014`, `1000015` |
 | **Execution** | Command and Scripting Interpreter | [T1059](https://attack.mitre.org/techniques/T1059/) | Suricata NIDS / Zeek HTTP | `1000001` |
 | **Credential Access** | Brute Force: Password Guessing | [T1110.001](https://attack.mitre.org/techniques/T1110/001/) | Suricata NIDS (SSH Threshold) | `1000003` |
 | **Reconnaissance** | Active Scanning: Port / Vulnerability | [T1595](https://attack.mitre.org/techniques/T1595/) | Suricata NIDS / tshark | `1000004`, `1000006`, `1000009` |
@@ -106,6 +112,12 @@ tshark -r pcaps/lab_capture.pcap -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0" 
 ### 2. Suricata Structured Alert Record (`suricata/logs/eve.json`)
 ```json
 {"timestamp":"2026-09-15T14:10:15.819201+0000","flow_id":192837465,"in_iface":"enp0s8","event_type":"alert","src_ip":"192.168.56.105","src_port":49212,"dest_ip":"192.168.56.106","dest_port":80,"proto":"TCP","alert":{"action":"allowed","gid":1,"signature_id":1000001,"rev":1,"signature":"LOCAL SURICATA HTTP Command Injection Attempt","category":"Web Application Attack","severity":1}}
+```
+
+Newer 2025 CVE probes land as additional NDJSON records in the same file, for example the SAP NetWeaver uploader (`sid:1000014`) and the Tomcat partial-PUT probe (`sid:1000015`) captured during the same lab session:
+
+```json
+{"timestamp":"2026-09-15T14:11:02.447710+0000","flow_id":192837491,"src_ip":"192.168.56.105","dest_ip":"192.168.56.106","dest_port":80,"proto":"TCP","alert":{"signature_id":1000014,"rev":1,"signature":"LOCAL SURICATA EXPLOIT SAP NetWeaver Visual Composer Metadata Uploader Unauthenticated File Upload (CVE-2025-31324)","category":"Web Application Attack","severity":1}}
 ```
 
 ---
