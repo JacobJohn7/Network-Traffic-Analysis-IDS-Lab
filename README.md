@@ -52,7 +52,15 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLO
 
 # 10. Apache Tomcat Partial PUT Session Deserialization RCE Probe (CVE-2025-24813)
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Apache Tomcat Partial PUT Session Deserialization RCE Probe (CVE-2025-24813)"; flow:established,to_server; http.method; content:"PUT"; http.header; content:"Content-Range:"; nocase; reference:cve,2025-24813; classtype:web-application-attack; sid:1000015; rev:1;)
+
+# 11. Next.js Middleware Authorization Bypass via x-middleware-subrequest (CVE-2025-29927)
+alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLOIT Next.js Middleware Authorization Bypass x-middleware-subrequest Header (CVE-2025-29927)"; flow:established,to_server; http.header; content:"x-middleware-subrequest|3a|"; nocase; fast_pattern; content:"middleware:middleware"; nocase; reference:cve,2025-29927; classtype:attempted-admin; sid:1000016; rev:1;)
+
+# 12. Apache ActiveMQ OpenWire Deserialization RCE Probe (CVE-2023-46604)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 61616 (msg:"LOCAL SURICATA EXPLOIT Apache ActiveMQ OpenWire Deserialization RCE (CVE-2023-46604)"; flow:established,to_server; content:"|00 00 00 00|"; depth:4; content:"ClassPathXmlApplicationContext"; nocase; distance:0; reference:cve,2023-46604; classtype:attempted-admin; sid:1000017; rev:1;)
 ```
+
+The two newest signatures target exploitation chains that dominated 2025 disclosure feeds. `sid:1000016` keys on the `x-middleware-subrequest` header that Next.js mistakenly trusts from external clients — repeating the internal middleware stack string (`middleware:middleware:...`) short-circuits the auth chain and exposes protected routes. `sid:1000017` is a raw TCP signature on the OpenWire broker port `61616`, matching the `ClassPathXmlApplicationContext` gadget class pulled in by the `BaseDataStreamMarshaller` payload rather than relying on a URI buffer.
 
 ---
 
@@ -60,7 +68,7 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL SURICATA EXPLO
 
 | Tactic | Technique | ID | Detection Source | Rule SID |
 | :--- | :--- | :--- | :--- | :--- |
-| **Initial Access** | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190/) | Suricata NIDS | `1000007`, `1000008`, `1000010`, `1000011`, `1000014`, `1000015` |
+| **Initial Access** | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190/) | Suricata NIDS | `1000007`, `1000008`, `1000010`, `1000011`, `1000014`, `1000015`, `1000016`, `1000017` |
 | **Execution** | Command and Scripting Interpreter | [T1059](https://attack.mitre.org/techniques/T1059/) | Suricata NIDS / Zeek HTTP | `1000001` |
 | **Credential Access** | Brute Force: Password Guessing | [T1110.001](https://attack.mitre.org/techniques/T1110/001/) | Suricata NIDS (SSH Threshold) | `1000003` |
 | **Reconnaissance** | Active Scanning: Port / Vulnerability | [T1595](https://attack.mitre.org/techniques/T1595/) | Suricata NIDS / tshark | `1000004`, `1000006`, `1000009` |
